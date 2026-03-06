@@ -2,7 +2,7 @@ import { env } from '../config/env';
 import type { FileDiff, ReviewResult } from '../domain/types';
 import { buildPrompt } from './prompt';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.0-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
 const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const GEMINI_TEMPERATURE = 0.2;
 

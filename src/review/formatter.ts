@@ -1,4 +1,4 @@
-import type { ReviewResult, Severity } from '../domain/types';
+import type { ReviewFinding, ReviewResult, Severity } from '../domain/types';
 
 const SEVERITY_LABEL: Record<Severity, string> = {
   high: '🔴 High',
@@ -24,6 +24,15 @@ export function formatSummaryComment(result: ReviewResult): string {
     }
   } else {
     lines.push('', '_발견된 이슈 없음_');
+  }
+
+  return lines.join('\n');
+}
+
+export function formatLineComment(finding: ReviewFinding): string {
+  const lines = [`**${SEVERITY_LABEL[finding.severity]} — ${finding.title}**`, '', finding.description];
+  if (finding.suggestion) {
+    lines.push('', `> 💡 ${finding.suggestion}`);
   }
 
   return lines.join('\n');

@@ -30,6 +30,13 @@ export async function postLineComments(diffs: FileDiff[], result: ReviewResult):
   });
   const commitId = pr.head.sha;
 
+  const { data: existingComments } = await octokit.pulls.listReviewComments({
+    owner: env.owner,
+    repo: env.repo,
+    pull_number: env.prNumber,
+    per_page: PER_PAGE,
+  });
+
   const candidates = result.findings
     .filter((f) => f.severity === 'high' || f.severity === 'med')
     .slice(0, MAX_LINE_COMMENTS);
@@ -40,6 +47,11 @@ export async function postLineComments(diffs: FileDiff[], result: ReviewResult):
 
     const line = finding.line ?? (finding.anchor ? findLineInPatch(diff.patch, finding.anchor) : null);
     if (!line) continue;
+
+    const alreadyPosted = existingComments.some(
+      (c) => c.path === finding.file && c.line === line && c.body?.includes(REVIEW_COMMENT_MARKER),
+    );
+    if (alreadyPosted) continue;
 
     try {
       await octokit.pulls.createReviewComment({

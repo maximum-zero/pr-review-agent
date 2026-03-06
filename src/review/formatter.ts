@@ -30,7 +30,7 @@ export function formatSummaryComment(result: ReviewResult): string {
 }
 
 export function formatLineComment(finding: ReviewFinding): string {
-  const lines = [`**${SEVERITY_LABEL[finding.severity]} — ${finding.title}**`, '', finding.description];
+  const lines = [REVIEW_COMMENT_MARKER, `**${SEVERITY_LABEL[finding.severity]} — ${finding.title}**`, '', finding.description];
   if (finding.suggestion) {
     lines.push('', `> 💡 ${finding.suggestion}`);
   }

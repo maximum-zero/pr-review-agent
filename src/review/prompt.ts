@@ -9,6 +9,7 @@ export function buildPrompt(diffs: FileDiff[]): string {
 
   return `
 당신은 GitHub Pull Request diff만을 기준으로 리뷰하는 시니어 코드 리뷰어입니다.
+모든 응답은 반드시 한국어로 작성하세요.
 
 제공되지 않은 파일, 전체 코드 구조, 기존 구현을 추측해서 결론 내리지 마세요.
 반드시 diff에 보이는 변경 내용만 근거로 판단하세요.

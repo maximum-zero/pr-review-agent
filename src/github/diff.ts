@@ -13,9 +13,9 @@ const EXCLUDE_PATTERNS = [
   /^bun\.lockb$/,
   /\.generated\.(ts|js|graphql)$/,
   /\/__generated__\//,
-  /^dist\//,
-  /^build\//,
-  /^\.next\//,
+  /(^|\/)dist\//,
+  /(^|\/)build\//,
+  /(^|\/)\.(next)\//,
   /\.snap$/,
 ];
 
@@ -46,7 +46,7 @@ export async function getPrDiffs(): Promise<FileDiff[]> {
     const patch = truncatePatch(f.patch);
     const lineCount = patch.split('\n').length;
 
-    if (totalLines + lineCount > MAX_TOTAL_LINES) break;
+    if (totalLines + lineCount > MAX_TOTAL_LINES) continue;
     totalLines += lineCount;
 
     diffs.push({

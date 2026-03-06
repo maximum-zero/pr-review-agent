@@ -37,6 +37,8 @@ export async function postLineComments(diffs: FileDiff[], result: ReviewResult):
     per_page: PER_PAGE,
   });
 
+  const postedKeys = new Set(existingComments.map((c) => `${c.path}:${c.line}`));
+
   const candidates = result.findings
     .filter((f) => f.severity === 'high' || f.severity === 'med')
     .slice(0, MAX_LINE_COMMENTS);
@@ -48,10 +50,7 @@ export async function postLineComments(diffs: FileDiff[], result: ReviewResult):
     const line = finding.line ?? (finding.anchor ? findLineInPatch(diff.patch, finding.anchor) : null);
     if (!line) continue;
 
-    const alreadyPosted = existingComments.some(
-      (c) => c.path === finding.file && c.line === line,
-    );
-    if (alreadyPosted) continue;
+    if (postedKeys.has(`${finding.file}:${line}`)) continue;
 
     try {
       await octokit.pulls.createReviewComment({

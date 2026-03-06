@@ -26,7 +26,7 @@ function isExcluded(filename: string): boolean {
 function truncatePatch(patch: string): string {
   const lines = patch.split('\n');
   if (lines.length <= MAX_PATCH_LINES) return patch;
-  return lines.slice(0, MAX_PATCH_LINES).join('\n') + '\n\\ 파일이 너무 커서 일부만 표시됩니다';
+  return lines.slice(0, MAX_PATCH_LINES).join('\n') + '\n// (이하 생략: 파일이 너무 큼)';
 }
 
 export async function getPrDiffs(): Promise<FileDiff[]> {

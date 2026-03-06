@@ -1,0 +1,9 @@
+[
+  { "name": "✨ feature", "color": "1D76DB", "description": "새로운 기능 추가" },
+  { "name": "🐛 bug", "color": "D73A4A", "description": "버그 수정" },
+  { "name": "♻️ refactor", "color": "FBCA04", "description": "코드 리팩터링" },
+  { "name": "🧪 test", "color": "0E8A16", "description": "테스트 코드 관련 변경" },
+  { "name": "📝 docs", "color": "0075CA", "description": "문서 수정" },
+  { "name": "🔧 chore", "color": "C2E0C6", "description": "빌드/설정 변경" },
+  { "name": "🤖 ai-review", "color": "5319E7", "description": "AI 코드 리뷰 완료" }
+]

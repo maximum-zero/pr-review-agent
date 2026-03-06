@@ -257,3 +257,106 @@ export interface ReviewResult {
 
 - 실제 PR 오픈 시 Actions 전체 파이프라인 end-to-end 실행 성공
 - PR에 summary comment + line comment 게시 확인
+
+---
+
+## Phase 1 — 안정성 개선 (MVP 이후)
+
+MVP가 동작하는 것을 확인한 뒤, 실사용에서 발생하는 노이즈와 오류를 줄인다.
+
+### Step 9 — Draft PR 스킵
+
+**작업 내용:**
+
+- PR 오픈 시 `pr.draft === true`이면 리뷰 없이 종료
+- 또는 workflow 레벨에서 `if: github.event.pull_request.draft == false` 조건 추가
+
+**완료 조건:**
+
+- Draft PR에서 Actions가 실행되지 않거나 조기 종료
+
+---
+
+### Step 10 — 제외 파일 패턴 처리
+
+**작업 내용:**
+
+- lock 파일, 자동생성 파일 등 기본 제외 패턴 하드코딩
+  - `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lockb`
+  - `**/*.generated.ts`, `**/__generated__/**`
+  - `dist/**`, `build/**`, `.next/**`
+  - `**/*.snap`
+- `diff.ts`에서 FileDiff[] 수집 후 해당 패턴 필터링
+
+**완료 조건:**
+
+- 제외 파일이 AI 프롬프트에 포함되지 않음
+
+---
+
+### Step 11 — Diff 크기 제한 (토큰 초과 방지)
+
+**작업 내용:**
+
+- 파일당 patch 최대 라인 수 제한 (1000줄 초과 시 truncation + 안내 메시지)
+- 전체 diff 합산 크기 제한
+
+**완료 조건:**
+
+- 대형 PR에서 API 오류 없이 리뷰 생성
+
+---
+
+## Phase 2 — GitHub Composite Action 패키징 (멀티레포 지원)
+
+다른 레포에서 `uses: {owner}/pr-review-agent@main`으로 바로 사용할 수 있도록 패키징한다.
+
+### Step 12 — 프로젝트별 리뷰 지시 파일 지원
+
+**작업 내용:**
+
+- 타겟 레포의 `.github/pr-review.md`를 읽어 프롬프트에 주입
+- 파일 없으면 기본 리뷰만 동작 (하위 호환)
+- `.github/pr-review.md.example` 템플릿 제공
+
+**템플릿 구조:**
+
+```markdown
+## 프로젝트 개요
+
+## 아키텍처
+
+## 테스트 규칙
+
+## 팀 컨벤션
+
+## 제외 파일 패턴
+```
+
+**완료 조건:**
+
+- `.github/pr-review.md` 있을 때 해당 규칙 기반 리뷰 생성 확인
+- 없을 때 기본 동작 확인
+
+---
+
+### Step 13 — ncc 번들링 & action.yml 작성
+
+**작업 내용:**
+
+- `@vercel/ncc`로 TypeScript → `dist/index.js` 단일 파일 번들링
+- `dist/` git에 포함 (타겟 레포가 별도 빌드 없이 사용 가능)
+- `action.yml` 작성: `gemini-api-key`, `github-token` inputs 정의
+
+**타겟 레포 사용 예시:**
+
+```yaml
+- uses: {owner}/pr-review-agent@main
+  with:
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**완료 조건:**
+
+- 외부 레포에서 `uses:` 방식으로 AI 리뷰 정상 동작

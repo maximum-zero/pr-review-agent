@@ -49,7 +49,7 @@ export async function postLineComments(diffs: FileDiff[], result: ReviewResult):
     if (!line) continue;
 
     const alreadyPosted = existingComments.some(
-      (c) => c.path === finding.file && c.line === line && c.body?.includes(REVIEW_COMMENT_MARKER),
+      (c) => c.path === finding.file && c.line === line,
     );
     if (alreadyPosted) continue;
 

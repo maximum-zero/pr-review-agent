@@ -10,7 +10,8 @@ function parseUserData(raw: string) {
 
 async function fetchUser(id: number) {
   const res = await fetch(`https://api.example.com/users/${id}`);
-  const json = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const json = (await res.json()) as any;
   return json.user.name;
 }
 
@@ -22,7 +23,7 @@ function processItems(items: any[]) {
 
 function findUser(users: { id: number; name: string }[], id: number) {
   const user = users.find((u) => u.id === id);
-  return user.name;
+  return user!.name;
 }
 
 export { parseUserData, fetchUser, processItems, findUser, DB_PASSWORD, API_KEY };

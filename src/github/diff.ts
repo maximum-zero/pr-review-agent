@@ -3,6 +3,31 @@ import { octokit } from './client';
 import type { FileDiff } from '../domain/types';
 
 const PER_PAGE = 100;
+const MAX_PATCH_LINES = 1000;
+const MAX_TOTAL_LINES = 10000;
+
+const EXCLUDE_PATTERNS = [
+  /^package-lock\.json$/,
+  /^yarn\.lock$/,
+  /^pnpm-lock\.yaml$/,
+  /^bun\.lockb$/,
+  /\.generated\.(ts|js|graphql)$/,
+  /\/__generated__\//,
+  /^dist\//,
+  /^build\//,
+  /^\.next\//,
+  /\.snap$/,
+];
+
+function isExcluded(filename: string): boolean {
+  return EXCLUDE_PATTERNS.some((pattern) => pattern.test(filename));
+}
+
+function truncatePatch(patch: string): string {
+  const lines = patch.split('\n');
+  if (lines.length <= MAX_PATCH_LINES) return patch;
+  return lines.slice(0, MAX_PATCH_LINES).join('\n') + '\n\\ 파일이 너무 커서 일부만 표시됩니다';
+}
 
 export async function getPrDiffs(): Promise<FileDiff[]> {
   const { data: files } = await octokit.pulls.listFiles({
@@ -12,13 +37,25 @@ export async function getPrDiffs(): Promise<FileDiff[]> {
     per_page: PER_PAGE,
   });
 
-  return files
-    .filter((f) => f.patch !== undefined)
+  const diffs: FileDiff[] = [];
+  let totalLines = 0;
 
-    .map((f) => ({
+  for (const f of files) {
+    if (!f.patch || isExcluded(f.filename)) continue;
+
+    const patch = truncatePatch(f.patch);
+    const lineCount = patch.split('\n').length;
+
+    if (totalLines + lineCount > MAX_TOTAL_LINES) break;
+    totalLines += lineCount;
+
+    diffs.push({
       filename: f.filename,
-      patch: f.patch!,
+      patch,
       additions: f.additions,
       deletions: f.deletions,
-    }));
+    });
+  }
+
+  return diffs;
 }
